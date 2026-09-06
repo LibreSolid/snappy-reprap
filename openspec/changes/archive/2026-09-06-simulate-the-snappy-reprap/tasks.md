@@ -44,4 +44,4 @@
 - [x] 8.1 Full faceted regression on the root; the exact run once
 - [x] 8.2 `solid build`; read `viewer.json` (drivers, instructions, flexible entries); snapshots at rest and homed, inspected
 - [x] 8.3 `README.md` section: how to run it, what moves, what was found in the design
-- [ ] 8.4 Sync the specs and archive the change, `Purpose` lines written
+- [x] 8.4 Sync the specs and archive the change, `Purpose` lines written
