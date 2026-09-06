@@ -21,18 +21,17 @@ design's own phase constant turns them; the contracts hold the rods
 at the phase that clears, at heights between pitches, where a wrong
 phase shows.
 
-The spatial questions are put to the mesh engine directly rather than
-through the framework's assertions, and it is worth being precise about
-why.  OpenSCAD 2021.01 exports the design's snap-together parts -- the
-sleds, the rails, the joiners, everything built from thinning walls
-and joiner tabs -- with edges that four faces share, where two features
-of one part meet along an edge.  Manifold ingests those meshes and
-reports no error, and the volumes it computes agree with trimesh's;
-but the framework's faceted path refuses a mesh trimesh does not call
-watertight before it ever reaches the engine, so `assertNotIntersecting`
-raises on a sled instead of answering.  `shared` below asks the same
-engine the same question.  That is a gap to report to the framework,
-not a property of this machine.
+The pair contracts -- clear, fouling, blocked, free -- are the
+framework's own assertions.  OpenSCAD 2021.01 exports the design's
+snap-together parts with edges that four faces share, where two
+features of one part meet along an edge; trimesh calls those meshes
+non-watertight, and the framework once refused them before the engine
+saw them.  It now lets the engine judge, and Manifold builds every one
+of them.  What is still asked of the engine directly, in `shared` and
+the slab below, is a quantity the assertions do not report: the volume
+a rack shares with a pinion summed over the racks, or over a slab of
+the pair one millimetre thick, compared at the design's phase and a
+fraction of a tooth off it.
 
 The two whole-model contracts `solid new` scaffolds --
 `assertNoDisconnectedSolids` and `assertNoSolidInterference` -- are
@@ -157,6 +156,9 @@ class SnappyReprapTest(TestCase):
     # six tenths of a cubic millimetre per link.
     GRAZE = 0.8
 
+    # What two tessellated surfaces that only touch share, by rounding.
+    TANGENT = 1e-6
+
     def drive(self, **positions):
         """Send the axes somewhere, in millimetres, Z included; an axis
         not named goes to nought.  Every test starts from rest this
@@ -181,16 +183,13 @@ class SnappyReprapTest(TestCase):
             err_msg=f'{node.name} moved')
 
     def assertClear(self, node1, node2):
-        volume = shared(node1, node2)
-        self.assertEqual(
-            volume, 0.0,
-            f'{node1.name} shares {volume:.3f} mm^3 with {node2.name}')
+        self.assertNotIntersecting(node1, node2)
 
     def assertFouls(self, node1, node2, at_least=0.0):
-        volume = shared(node1, node2)
-        self.assertGreater(
-            volume, at_least,
-            f'{node1.name} does not foul {node2.name}')
+        if at_least > 0.0:
+            self.assertIntersectVolumeAbove(node1, node2, at_least)
+        else:
+            self.assertIntersecting(node1, node2)
 
     def assertNear(self, node1, node2, distance):
         """Some of `node1` stands within `distance` of `node2`."""
@@ -676,16 +675,17 @@ class SnappyReprapTest(TestCase):
                 for strand in strands:
                     self.assertFalse(strand.rigid)
                     for link in links:
-                        self.assertLess(
-                            shared(strand, link), self.GRAZE,
-                            f'{strand.name} cuts into {link.name}')
+                        self.assertIntersectVolumeBelow(strand, link, self.GRAZE)
                     bounds = strand.mesh.bounds
                     self.assertTrue(
                         (bounds[0] >= envelope[0] - 1.0).all()
                         and (bounds[1] <= envelope[1] + 1.0).all(),
                         f'{strand.name} leaves its chain at {axis}={position}')
+                # Neighbouring strands lie side by side and touch along
+                # a line; a tessellated tangency shares a sliver of
+                # rounding, not metal.
                 for one, other in zip(strands, strands[1:]):
-                    self.assertClear(one, other)
+                    self.assertIntersectVolumeBelow(one, other, self.TANGENT)
             self.drive(**{axis: 0.0})
 
     ########################################
