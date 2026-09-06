@@ -4,3 +4,11 @@
 .DS_Store
 .ropeproject
 
+
+# solid-node build artifacts and Python caches
+/_build*
+__pycache__/
+.pytest_cache/
+/.env
+/snapshot*.png
+/screenshot.png

@@ -1,0 +1,5 @@
+[tool.solid-node]
+model = "simulation.snappy_reprap:SnappyReprap"
+
+[tool.libresolid-studio]
+profile = "fordesmac"

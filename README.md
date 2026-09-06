@@ -61,3 +61,69 @@ You _might_ be able to run the makefile under CygWin, if you set $OPENSCAD to so
 OPENSCAD="/Program Files/OpenSCAD/openscad.exe"
 ```
 
+
+
+The machine as a simulation
+===========================
+
+Beside the OpenSCAD design there is a second reading of it: a
+[solid-node](https://pypi.org/project/solid-node/) tree in `simulation/`,
+in which every part a builder handles is a leaf calling the design's own
+module, coloured as the design paints it, every group snapped together
+before it goes into something bigger is an assembly, and the machine's
+motion is three drivers on the root.  The geometry is the .scad design's;
+what the tree adds is where every part goes and what moves.
+
+    solid build                                  # build the machine
+    solid test --faceted simulation/snappy_reprap.py   # the contracts
+    solid develop                                # watch and serve it
+
+The three drivers are the design's own `xslidepos`, `yslidepos` and
+`zslidepos`, in millimetres: how far the X sled stands to the left of
+its rail's middle, how far the Y sled stands forward of its, and how
+high the bridge stands above the middle of the towers' rails.  Each
+ranges from where its limit switch is first touched to where its travel
+physically ends -- numbers read off the built parts, not the firmware,
+which believes in three millimetres more of X and Y and thirteen of Z
+than the parts allow.  The `HomeX`, `HomeY` and `HomeZ` buttons run each
+axis to its own switch at the firmware's homing feedrate for that axis:
+50 mm/s for the racks, 4 mm/s for the screws, which is why homing Z is
+slow.  `Rest` goes back to the pose the design draws.
+
+What the design leaves standing still under a moving part moves with it
+here.  The pinion under each rack turns with its sled, one turn per 80 mm.
+The lifter rods turn as the bridge rises, one turn per 8 mm, clockwise
+from above, couplers and all, and the bridge hangs on their thread.  The
+two cable chains are chains: nineteen links each, placed on the curve a
+chain of that length makes between its anchors, with the six and twelve
+wires through them drawn as flexible strands in the design's own wire
+colours.  The filament, which the design never draws, is wound
+on the spool's hub and runs through the hole in the brace centre and
+down into the extruder, redrawn wherever the bridge stands.
+
+Reading the design this closely found a few things in it, all recorded
+where they are met and none of them changed in the .scad sources:
+
+- `lifter_assembly_5` turns the rods `-90` degrees to line their thread
+  up with the Z sleds' sockets.  Under OpenSCAD 2021.01 that leaves the
+  thread running through both sockets at every height; the sockets
+  clear the rods only for rods turned 174 to 213 degrees further, and the
+  simulation turns them 193.5 further (`simulation/z_screw.py`).
+- The herringbone pair does not quite mesh over the whole tooth: the
+  pinion is an involute extruded with a twist and the rack a straight
+  rack skewed, and their flanks drift apart along the tooth, so the pair
+  shares some 45 mm^3 at its best phase.  The author's shipped STLs are
+  the same geometry.  At any one height the teeth interleave cleanly
+  (`simulation/pinion.py`).
+- Four of the design's harness runs render as nothing under this
+  OpenSCAD -- `wiring()`'s fillet yields `nan` on their paths -- and are
+  left out (`simulation/wiring.py`).
+- The assembly text's link counts (13 or 14 for the X chain, 18 for the
+  Z chain) are short for the travel; a chain reaching both ends of it
+  with a straight link in each anchor needs 19 (`simulation/cable_chain.py`).
+- The Y sled's two halves are drawn half a millimetre apart where the X
+  sled's touch, so the Y racks are a quarter of a millimetre out of pitch
+  with each other; the assembly text says to line the racks up
+  (`simulation/test_snappy_reprap.py`).
+
+The design record is under `openspec/`.
