@@ -1,0 +1,48 @@
+schema: spec-driven
+
+# Project context shown to AI when creating artifacts.
+context: |
+  snappy-reprap is Revar Desmera's OpenSCAD design of the Snappy RepRap 3,
+  a mostly-printed rack-and-pinion 3D printer, plus a solid-node
+  simulation started in September 2026: the Python package `simulation/`
+  reads the unchanged .scad sources as a solid_node assembly tree in
+  which every part a builder handles is a leaf coloured as the design
+  colours it, every group snapped together before it goes into something
+  bigger is an AssemblyNode, and the machine's motion is three drivers
+  on the root. The entry point is declared in pyproject.toml as
+  `simulation.snappy_reprap:SnappyReprap`.
+
+  Conventions:
+  - The OpenSCAD design is the source of truth for geometry and
+    dimensions. The layer never restates a dimension it can probe from
+    `config.scad`, and a value the design writes inside a module body is
+    restated once, in `params.py`, with the module named.
+  - The layer is as thin as it can be: a leaf is one module of the
+    design, called as it is; Python says only where a part goes and what
+    moves. Things are modelled here only when the design has nothing for
+    them: motion that the design leaves still, and the flexible parts
+    (wires through the chains, the filament) whose shape is a function
+    of machine state.
+  - TDD: contracts run red first, one commit per increment. Tests
+    assert placement, engagement and motion -- what this layer is
+    responsible for -- not the module geometry, which was correct before
+    the layer existed.
+  - Every part of the design is OpenSCAD and therefore faceted; the
+    flexible leaves are exact. The test kernel is faceted for the loop
+    and exact for the certified run.
+  - Knob values are not design decisions. Drivers, instructions, ports,
+    derived relationships and observable behaviour are.
+
+rules:
+  proposal:
+    - "Name the interfaces the change establishes or alters, not the files you plan to edit."
+    - "Say what the design leaves undrawn or unmoving today; a proposal without a gap is a preference."
+  specs:
+    - "Describe observable behavior of the current system only; no aspirational requirements in main specs."
+    - "Write a MODIFIED requirement as the complete replacement block, every unchanged line included."
+    - "State every clearance, travel and rate with its unit."
+  design:
+    - "Record the alternatives you rejected and the measurement that decided it."
+  tasks:
+    - "Order the work so a failing contract exists before the placement or motion that satisfies it."
+    - "Archiving a new capability writes `Purpose: TBD` into its spec. Replace that line with what the interface is for before you commit."
