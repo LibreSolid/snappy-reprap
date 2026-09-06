@@ -45,7 +45,7 @@ fouls the machine anywhere in the travel.
 import math
 
 from molejo import Arc, Circle, Line, P, Shape
-from solid_node.math import cos, sin, sqrt
+from solid_node.math import cos, max, min, sin
 from solid_node.node import AssemblyNode, MolejoNode, TranslationalPort
 from solid_node.parameters import Count, Length
 
@@ -71,20 +71,6 @@ MOST_WIRES = len(colors.WIRES)
 #: them: thirty-two puts a ring every six degrees of it.
 PATH_SAMPLES = 32
 PROFILE_SAMPLES = 8
-
-
-def smooth_min(a, b):
-    """The smaller of two values, as an expression the viewer can take.
-
-    ``sqrt(x*x)`` is ``|x|``, and the machine's symbolic expressions
-    carry ``sqrt`` where they carry no ``min``; this is how a link
-    knows which run it is on without a branch.
-    """
-    return (a + b - sqrt((a - b) * (a - b))) / 2
-
-
-def smooth_max(a, b):
-    return (a + b + sqrt((a - b) * (a - b))) / 2
 
 
 def hex_offsets(count, diameter=WIRE_DIAMETER):
@@ -239,14 +225,15 @@ class CableChain(AssemblyNode):
 
         Returns ``(x, z, angle)``: the angle is how far the chain has
         turned over, nought on the fixed run and a half turn on the
-        moving one.  Every clamp is a smooth one so the same formula
-        serves a number and a symbolic position.
+        moving one.  Every clamp is the framework's own ``min``/``max``,
+        which take the symbolic face as readily as the numeric one, so
+        the same formula serves a number and a symbolic position.
         """
         radius = self.radius
-        along = smooth_min(distance, bottom)
-        turned = smooth_min(smooth_max(distance - bottom, 0),
-                            math.pi * radius)
-        back = smooth_max(distance - bottom - math.pi * radius, 0)
+        along = min(distance, bottom)
+        turned = min(max(distance - bottom, 0),
+                     math.pi * radius)
+        back = max(distance - bottom - math.pi * radius, 0)
         angle = turned / radius * 180 / math.pi
         x = self.bottom_x - along - radius * sin(angle) + back
         z = self.bottom_z + radius * (1 - cos(angle))

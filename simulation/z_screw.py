@@ -37,6 +37,8 @@ rate takes: this is a screw, not a rack, and the interface should show
 a maker the difference.
 """
 
+from solid_node.mechanisms import screw_angle, screw_travel
+
 from simulation.params import lifter_rod_pitch
 
 
@@ -62,11 +64,21 @@ XY_HOMING_RATE = 50.0
 
 
 def angle(height):
-    """The rods' angle, in degrees, that holds the bridge at `height`."""
-    return height / SCALE
+    """The rods' angle, in degrees, that holds the bridge at `height`.
+
+    The framework's own screw law, ``screw_angle``, inverted: this
+    design's thread lifts the bridge when the rods turn clockwise seen
+    from above, and clockwise from above is a negative rotation about
+    the rods' own axis -- see the module docstring's account of `SCALE`.
+    """
+    return -screw_angle(height, LEAD)
 
 
 def lift(turned):
     """The height, in millimetres, that rods `turned` that many degrees
-    hold the bridge at."""
-    return turned * SCALE
+    hold the bridge at.
+
+    The framework's own screw law, ``screw_travel``, with the same
+    explicit minus as `angle` -- see the module docstring.
+    """
+    return -screw_travel(turned, LEAD)
