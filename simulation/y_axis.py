@@ -7,8 +7,8 @@ goes wherever X goes; what moves here is the bed.
 """
 
 from solid_node.node import AssemblyNode
-from solid_node.motion.ports import TranslationalPort
 
+from simulation import pinion
 from simulation.motor_segment import SWITCH_Y, MotorSegment
 from simulation.params import (
     joiner_width,
@@ -40,16 +40,19 @@ SLED = rail_height + groove_height / 2
 class YAxis(AssemblyNode):
     """Rails, motor segment, endcaps and the bed sled.
 
-    `position` is the design's ``yslidepos``: how far forward, along
+    `sled.travel` is the design's ``yslidepos``: how far forward, along
     -y, the bed sled stands from the middle of its rail.
     """
-
-    position = TranslationalPort(unit='mm')
 
     segment = MotorSegment()
     rails = RailSegment().repeat(2)
     endcaps = RailYEndcap().repeat(2)
     sled = YSled()
+
+    # The same sentence as XAxis's: the segment here stands unturned,
+    # so its own -y is the sled's forward, and the mesh reads identically.
+    sled.travel.drives(segment.pinion.spin, ratio=pinion.DEGREES_PER_MM,
+                       offset=pinion.PHASE)
 
     # The motor's four wires and the switch's two, out the front left
     # access hole; ``y_motor_segment_assembly_1`` and ``_2``.
@@ -92,9 +95,3 @@ class YAxis(AssemblyNode):
         place(self.motor_wires, up(motor_top_z - (motor_length - 3)))
         place(self.switch_wire_a, fwd(SWITCH_Y))
         place(self.switch_wire_b, fwd(SWITCH_Y))
-
-    def simulate(self):
-        self.sled.translate([0, -self.position.value, 0])
-        # The segment stands unturned, so a sled going forward goes
-        # along its own -y: exactly what its `travel` counts.
-        self.connect(self.position, self.segment.travel)

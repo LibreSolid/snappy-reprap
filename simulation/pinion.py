@@ -52,7 +52,6 @@ SIGN = 1
 #: over one tooth pitch, found to a quarter of a degree.
 PHASE = 14.25
 
-
-def angle(travel):
-    """The pinion's angle, in degrees, for a sled `travel` mm forward."""
-    return SIGN * 360 * travel / MM_PER_TURN + PHASE
+#: Degrees the pinion turns per millimetre of rack travel: the sled's
+#: `travel` drives the pinion's `spin` by this ratio, phased by `PHASE`.
+DEGREES_PER_MM = SIGN * 360 / MM_PER_TURN

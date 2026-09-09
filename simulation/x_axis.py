@@ -8,8 +8,8 @@ belong to the machine, not to the axis.
 """
 
 from solid_node.node import AssemblyNode
-from solid_node.motion.ports import TranslationalPort
 
+from simulation import pinion
 from simulation.cable_chain import CableChain
 from simulation.chain_parts import ChainJoinerMount
 from simulation.homing import X_HOME, X_MAX
@@ -58,13 +58,9 @@ CHAIN_WIRES = 6
 class XAxis(AssemblyNode):
     """The base rail, its sled, and everything the sled carries.
 
-    `position` is the design's ``xslidepos``: how far the sled stands
-    to the left, along -x, of the middle of its rail.  `bed` is the Y
-    sled's own position, relayed down to the axis that owns it.
+    `sled.travel` is the design's ``xslidepos``: how far the sled
+    stands to the left, along -x, of the middle of its rail.
     """
-
-    position = TranslationalPort(unit='mm')
-    bed = TranslationalPort(unit='mm')
 
     segment = MotorSegment()
     rails = RailSegment().repeat(2)
@@ -72,6 +68,16 @@ class XAxis(AssemblyNode):
     chain_anchor = ChainJoinerMount()
     chain = CableChain(top=CHAIN_TOP, bottom=CHAIN_BOTTOM,
                        least=X_HOME, most=X_MAX, wires=CHAIN_WIRES)
+
+    # The rack under the sled turns the pinion; see `pinion` for the
+    # sign and the measured phase.  The segment stands turned a quarter
+    # turn clockwise, so its own -y is the machine's -x: a sled going
+    # left goes forward along the segment, which is the travel `SIGN`
+    # was measured for, and z is common to both frames.
+    sled.travel.drives(segment.pinion.spin, ratio=pinion.DEGREES_PER_MM,
+                       offset=pinion.PHASE)
+    # The chain's split between its two runs is the sled's own position.
+    sled.travel.drives(chain.offset)
 
     # ``x_motor_segment_assembly_1`` and ``_2``: the motor's four wires
     # and the switch's two, in the segment's own frame.
@@ -130,12 +136,3 @@ class XAxis(AssemblyNode):
         place(self.switch_wire_a, zrot(-90), fwd(SWITCH_Y))
         place(self.switch_wire_b, zrot(-90), fwd(SWITCH_Y))
         place(self.rail_wires, up(12))
-
-    def simulate(self):
-        self.sled.translate([-self.position.value, 0, 0])
-        # The segment stands turned a quarter turn clockwise, so its
-        # own -y is the machine's -x: a sled going left goes forward
-        # along the segment, which is what its `travel` counts.
-        self.connect(self.position, self.segment.travel)
-        self.connect(self.position, self.chain.offset)
-        self.connect(self.bed, self.sled.y_axis.position)

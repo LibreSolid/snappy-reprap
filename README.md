@@ -90,6 +90,10 @@ axis to its own switch at the firmware's homing feedrate for that axis:
 50 mm/s for the racks, 4 mm/s for the screws, which is why homing Z is
 slow.  `Rest` goes back to the pose the design draws.
 
+The machine's seven freedoms are joints on the bodies that have them and
+every transmission between them is a `drives` relation, except the cable
+chains' link stations, which are still placed by hand.
+
 What the design leaves standing still under a moving part moves with it
 here.  The pinion under each rack turns with its sled, one turn per 80 mm.
 The lifter rods turn as the bridge rises, one turn per 8 mm, clockwise

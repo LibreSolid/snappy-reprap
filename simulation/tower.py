@@ -9,7 +9,6 @@ lifter under them.
 """
 
 from solid_node.node import AssemblyNode
-from solid_node.motion.ports import RotationalPort
 from solid_node.parameters import Flag
 
 from simulation import colors
@@ -62,15 +61,13 @@ class SupportLeg(ScadPart):
 
 
 class ZTower(AssemblyNode):
-    """One tower.  `screw` is how far its lifter has been turned.
+    """One tower.  `lifter.screw.spin` is how far its lifter has turned.
 
     `chain_mount` is whether this is the tower the bridge's cable chain
     climbs: the design snaps the anchor onto the left tower only.
     """
 
     chain_mount = Flag(False)
-
-    screw = RotationalPort(unit='deg')
 
     joiner = YzJoiner()
     legs = SupportLeg().repeat(2)
@@ -128,6 +125,3 @@ class ZTower(AssemblyNode):
             place(wire, up(SWITCH_Z), back(SWITCH_Y), left(SWITCH_X))
         place(self.chain_anchor, left(platform_length), fwd(CHAIN_MOUNT_Y),
               up(CHAIN_MOUNT_Z), yrot(90), zrot(90))
-
-    def simulate(self):
-        self.connect(self.screw, self.lifter.angle)

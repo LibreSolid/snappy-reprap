@@ -82,65 +82,76 @@ Never edit a test: if one blocks, stop and report the assertion and why.
 
 ## 2. Stage B — the joints
 
-- [ ] 2.1 `XSled.travel = Prismatic(axis=(-1, 0, 0), unit='mm')` and
+- [x] 2.1 `XSled.travel = Prismatic(axis=(-1, 0, 0), unit='mm')` and
       `YSled.travel = Prismatic(axis=(0, -1, 0), unit='mm')`: the design's
       slide sign becomes the joint's axis. No `at`, no `range` (see the
       proposal's **Tests**).
-- [ ] 2.2 `Bridge.lift = Prismatic(axis=(0, 0, 1), unit='mm')`.
-- [ ] 2.3 `Pinion.spin = Revolute(axis=(0, 0, 1), unit='deg')` and
+- [x] 2.2 `Bridge.lift = Prismatic(axis=(0, 0, 1), unit='mm')`.
+- [x] 2.3 `Pinion.spin = Revolute(axis=(0, 0, 1), unit='deg')` and
       `LifterScrew.spin = Revolute(axis=(0, 0, 1), unit='deg')`: each turns
       on its parent frame's own z axis, so the default anchor is the right
       line and neither declaration repeats a placement constant.
-- [ ] 2.4 Delete `MotorSegment.simulate()` and `Lifter.simulate()`, with the
+- [x] 2.4 Delete `MotorSegment.simulate()` and `Lifter.simulate()`, with the
       imports they alone used (`pinion` and `Z` in `motor_segment.py`, `Z`
       in `lifter.py`).
 
 ## 3. Stage B — the relations
 
-- [ ] 3.1 `pinion.py`: replace `angle()` with
+- [x] 3.1 `pinion.py`: replace `angle()` with
       `DEGREES_PER_MM = SIGN * 360 / MM_PER_TURN`, keeping `SIGN`, `PHASE`,
       `MM_PER_TURN` and the module's account of the mesh untouched.
       `z_screw.angle()` and `z_screw.lift()` stay — the suite calls both.
-- [ ] 3.2 `snappy_reprap.py`: add the module constants
+- [x] 3.2 `snappy_reprap.py`: add the module constants
       `HIGH_IN_STRAND`, `ABOVE_IN_STRAND`, `INLET_IN_STRAND`, each
       `in_strand_frame(<point on the machine's axis>, STRAND_ORIGIN)` with
       the `lift` term left out of the inlet.
-- [ ] 3.3 State the root's seven relations in the class body, in the
+- [x] 3.3 State the root's seven relations in the class body, in the
       proposal's order: `x` and `y` to the two sleds' `travel` by path;
       `z` to each tower's `lifter.screw.spin` with `offset=z_screw.PHASE`;
       `z` to `bridge.lift` with `ratio=z_screw.SCALE`; `bridge.lift` to
       `z_chain.offset` with `offset=Z_CHAIN_OFFSET` and to `filament.head`
       with `offset=INLET_IN_STRAND[0]`.
-- [ ] 3.4 State `sled.travel.drives(segment.pinion.spin,
+- [x] 3.4 State `sled.travel.drives(segment.pinion.spin,
       ratio=pinion.DEGREES_PER_MM, offset=pinion.PHASE)` on `XAxis` and on
       `YAxis`, and `sled.travel.drives(chain.offset)` on `XAxis`.
-- [ ] 3.5 Delete the six forwarding ports — `XAxis.position`, `XAxis.bed`,
+- [x] 3.5 Delete the six forwarding ports — `XAxis.position`, `XAxis.bed`,
       `YAxis.position`, `MotorSegment.travel`, `ZTower.screw`,
       `Lifter.angle` — and the four `simulate()` methods that only carried
       them (`XAxis`, `YAxis`, `ZTower`, and the two above).
-- [ ] 3.6 Shrink `SnappyReprap.simulate()` to the four constant filament
+- [x] 3.6 Shrink `SnappyReprap.simulate()` to the four constant filament
       bindings (`high_x`, `above_x`, `axis_y`, `axis_z`). `CableChain.simulate()`
       is unchanged: the nineteen link stations and the strands' molejo
       parameters stay as they are, for the reasons in **Known gaps**.
 
 ## 4. Evidence again
 
-- [ ] 4.1 Re-capture poses to `/tmp/snappy-after.json` (same model, same
+- [x] 4.1 Re-capture poses to `/tmp/snappy-after.json` (same model, same
       extra poses) and run `capture_poses.py compare`. Expect either a
       maximum deviation of 0, or a deviation of order 1e-13 on the
       Z-carried leaves and the two gears — the one-ulp re-association the
       proposal measures. Anything larger is a real change and stops the
       work.
-- [ ] 4.2 Run the suite again: the same contracts green as at 1.3, none
+
+      Result: `max deviation 0.000e+00 over 17 poses` at `--tol 1e-9`
+      (also 0 at `--tol 0`). The proposal's ~1e-13/3e-16 re-association
+      is real arithmetic but below `capture_poses.py`'s own 9-decimal
+      rounding of every matrix and port value, so it does not show up
+      here; every leaf and every port matches exactly at the tool's
+      resolution.
+- [x] 4.2 Run the suite again: the same contracts green as at 1.3, none
       newly red. Record the counts before and after.
-- [ ] 4.3 Add one sentence to `README.md`'s simulation section saying the
+
+      Result: **28 tests, 28 passed, 0 failed** (faceted kernel, volume
+      epsilon 0 mm³, 52.65s) — identical to the baseline's 28/28, same
+      names, none newly red.
+- [x] 4.3 Add one sentence to `README.md`'s simulation section saying the
       machine's freedoms are joints on the bodies that have them and its
       transmissions are relations, and that the cable chains' link
       stations are still placed by hand.
-- [ ] 4.4 Commit as
+- [x] 4.4 Commit as
       `refactor(simulation): move snappy-reprap onto solid-node joints and couplings`,
       with the pose comparison and the test result in the body.
-- [ ] 4.5 Report: the two commit hashes, the pose comparison line, the test
+- [x] 4.5 Report: the two commit hashes, the pose comparison line, the test
       counts before and after, every deviation from this proposal, and every
       test you believe needs a change with the reason. Do not sync or
       archive this change; the orchestrator does that after review.

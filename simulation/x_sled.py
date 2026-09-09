@@ -6,6 +6,7 @@ onto the joiners in ``x_axis_assembly_6``.
 """
 
 from solid_node.node import AssemblyNode
+from solid_node.motion.joints import Prismatic
 
 from simulation.params import (
     groove_height,
@@ -24,7 +25,14 @@ DECK = groove_height / 2 + rail_offset
 
 
 class XSled(AssemblyNode):
-    """The X sled on its frame's origin, carrying the Y axis."""
+    """The X sled on its frame's origin, carrying the Y axis.
+
+    `travel` is the design's ``xslidepos``: how far the sled stands to
+    the LEFT of the middle of its rail, along the sled's own -x -- the
+    sign the joint's axis carries.
+    """
+
+    travel = Prismatic(axis=(-1, 0, 0), unit='mm')
 
     halves = XySled().repeat(2)
     joiners = XyJoiner().repeat(2)

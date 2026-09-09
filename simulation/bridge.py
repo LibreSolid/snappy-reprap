@@ -7,6 +7,7 @@ stands it between the towers and lifts it.
 """
 
 from solid_node.math import cos, sin
+from solid_node.motion.joints import Prismatic
 from solid_node.node import AssemblyNode
 
 from simulation import colors
@@ -57,7 +58,13 @@ class ZSled(ScadPart):
 
 
 class Bridge(AssemblyNode):
-    """The bridge, on its own middle, Z sled sockets on the x axis."""
+    """The bridge, on its own middle, Z sled sockets on the x axis.
+
+    `lift` is how high the bridge stands above the middle of the
+    towers' rails, the machine's own Z.
+    """
+
+    lift = Prismatic(axis=(0, 0, 1), unit='mm')
 
     extruder = Extruder()
     segments = BridgeSegment().repeat(2)

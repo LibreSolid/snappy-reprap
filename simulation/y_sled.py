@@ -8,6 +8,7 @@ the four clips last.
 """
 
 from solid_node.node import AssemblyNode
+from solid_node.motion.joints import Prismatic
 
 from simulation.params import (
     adjust_screw_diam,
@@ -66,7 +67,14 @@ class BedCorner(AssemblyNode):
 
 
 class YSled(AssemblyNode):
-    """The whole Y sled, on the sled frame's origin, deck up."""
+    """The whole Y sled, on the sled frame's origin, deck up.
+
+    `travel` is the design's ``yslidepos``: how far forward the sled
+    stands from the middle of its rail, along the sled's own -y -- the
+    sign the joint's axis carries.
+    """
+
+    travel = Prismatic(axis=(0, -1, 0), unit='mm')
 
     halves = XySled().repeat(2)
     corners = BedCorner().repeat(2)

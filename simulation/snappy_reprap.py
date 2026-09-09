@@ -110,6 +110,18 @@ HOLE_Z = BRACE_Z + rail_height - joiner_width / 2 - joiner_width / 2
 ABOVE_HOLE = 40.0
 HIGH_ABOVE_HOLE = 80.0
 
+#: The two constant points above the brace's hole and the machine's own
+#: axis at Z nought, each read in the strand's own frame: neither
+#: depends on the bridge's height, so each stays a `connect()` of a
+#: module constant rather than a relation.
+HIGH_IN_STRAND = in_strand_frame([0, 0, HOLE_Z + HIGH_ABOVE_HOLE], STRAND_ORIGIN)
+ABOVE_IN_STRAND = in_strand_frame([0, 0, HOLE_Z + ABOVE_HOLE], STRAND_ORIGIN)
+
+#: Where the filament goes in, at Z nought, in the strand's own frame:
+#: today's ``head`` expression with the `lift` term taken out, so
+#: relation (7) can add `bridge.lift` back as its driver.
+INLET_IN_STRAND = in_strand_frame([0, 0, INLET_Z], STRAND_ORIGIN)
+
 #: Where the controller mount hangs off the back of the left tower.
 RAMPS_X = TOWER_X + platform_length + 6
 
@@ -166,6 +178,15 @@ class SnappyReprap(AssemblyNode):
                          most=Z_MAX + Z_CHAIN_OFFSET, wires=Z_CHAIN_WIRES)
     filament = Filament()
 
+    # The seven freedoms, driven by the three inputs.
+    x.drives(x_axis.sled.travel)
+    y.drives(x_axis.sled.y_axis.sled.travel)
+    z.drives(left_tower.lifter.screw.spin, offset=z_screw.PHASE)
+    z.drives(right_tower.lifter.screw.spin, offset=z_screw.PHASE)
+    z.drives(bridge.lift, ratio=z_screw.SCALE)
+    bridge.lift.drives(z_chain.offset, offset=Z_CHAIN_OFFSET)
+    bridge.lift.drives(filament.head, offset=INLET_IN_STRAND[0])
+
     # ``final_assembly_2``: the towers' harnesses along the base rail.
     base_wires_a = Bundle(0)(path=[
         [-(TOWER_X + platform_length + 100), 0, rail_thick + 10],
@@ -211,22 +232,10 @@ class SnappyReprap(AssemblyNode):
         place(self.filament, translate(STRAND_ORIGIN), zrot(90), yrot(-90))
 
     def simulate(self):
-        self.connect(self.x, self.x_axis.position)
-        self.connect(self.y, self.x_axis.bed)
-
-        screw = self.z + z_screw.PHASE
-        self.connect(screw, self.left_tower.screw)
-        self.connect(screw, self.right_tower.screw)
-
-        lift = z_screw.lift(self.z)
-        self.bridge.translate([0, 0, lift])
-        self.connect(lift + Z_CHAIN_OFFSET, self.z_chain.offset)
-
-        high = in_strand_frame([0, 0, HOLE_Z + HIGH_ABOVE_HOLE], STRAND_ORIGIN)
-        above = in_strand_frame([0, 0, HOLE_Z + ABOVE_HOLE], STRAND_ORIGIN)
-        head = in_strand_frame([0, 0, INLET_Z + lift], STRAND_ORIGIN)
-        self.connect(high[0], self.filament.high_x)
-        self.connect(above[0], self.filament.above_x)
-        self.connect(head[0], self.filament.head)
-        self.connect(head[1], self.filament.axis_y)
-        self.connect(head[2], self.filament.axis_z)
+        # Not transmissions: nothing drives these, they are constants of
+        # the machine, each the strand-frame reading of a point on the
+        # machine's own axis. `filament.head` is relation (7) instead.
+        self.connect(HIGH_IN_STRAND[0], self.filament.high_x)
+        self.connect(ABOVE_IN_STRAND[0], self.filament.above_x)
+        self.connect(INLET_IN_STRAND[1], self.filament.axis_y)
+        self.connect(INLET_IN_STRAND[2], self.filament.axis_z)

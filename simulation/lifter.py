@@ -6,8 +6,8 @@ the whole stack turned by the sled's height.  Here the stack is turned
 by the angle the machine hands down.
 """
 
+from solid_node.motion.joints import Revolute
 from solid_node.node import AssemblyNode
-from solid_node.motion.ports import RotationalPort
 
 from simulation import colors
 from simulation.params import (
@@ -18,7 +18,7 @@ from simulation.params import (
     printer_slop,
 )
 from simulation.part import ScadPart
-from simulation.place import Z, place, right, up, yrot, zrot
+from simulation.place import place, right, up, yrot, zrot
 from simulation.scad import lifter_coupler, lifter_rod
 from simulation.vitamins import CouplerScrew, Nema17, SetScrewNut
 
@@ -60,8 +60,10 @@ class LifterScrew(AssemblyNode):
 
     One assembly so it turns as one thing about the coupler's axis,
     which is the origin: the stepper turns the coupler, the coupler
-    turns the rods.
+    turns the rods.  `spin` is that turn.
     """
+
+    spin = Revolute(axis=(0, 0, 1), unit='deg')
 
     coupler = LifterCoupler()
     rods = LifterRod().repeat(2)
@@ -79,12 +81,9 @@ class LifterScrew(AssemblyNode):
 class Lifter(AssemblyNode):
     """The stepper with the screw on its shaft.
 
-    `angle` is how far the screw has been turned about Z, and it comes
-    from outside: a lifter has no opinion about it.  The screw turns
-    and the stepper's case does not.
+    The screw turns and the stepper's case does not; `screw.spin` is
+    the freedom.
     """
-
-    angle = RotationalPort(unit='deg')
 
     motor = Nema17()
     screw = LifterScrew()
@@ -92,6 +91,3 @@ class Lifter(AssemblyNode):
     def render(self):
         place(self.motor, zrot(90))
         place(self.screw, up(COUPLER_SEAT))
-
-    def simulate(self):
-        self.screw.rotate(self.angle.value, Z)

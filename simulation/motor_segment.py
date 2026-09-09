@@ -7,10 +7,10 @@ drive gear on its shaft, and the microswitch clipped beside the rack's
 path.  The wiring differs between the two and belongs to the axes.
 """
 
+from solid_node.motion.joints import Revolute
 from solid_node.node import AssemblyNode
-from solid_node.motion.ports import TranslationalPort
 
-from simulation import colors, pinion
+from simulation import colors
 from simulation.params import (
     drive_gear_diam,
     endstop_depth,
@@ -23,7 +23,7 @@ from simulation.params import (
     printer_slop,
 )
 from simulation.part import ScadPart
-from simulation.place import Z, fwd, left, place, right, up, xrot, yrot, zrot
+from simulation.place import fwd, left, place, right, up, xrot, yrot, zrot
 from simulation.rails import MotorRailSegment
 from simulation.scad import drive_gear
 from simulation.vitamins import Microswitch, Nema17, SetScrew, SetScrewNut
@@ -55,8 +55,11 @@ class Pinion(AssemblyNode):
 
     One assembly rather than three placements so the nut and the screw
     go round with the gear they are pressed into: the segment turns
-    this node about its own axis, which is the gear's.
+    this node about its own axis, which is the gear's.  `spin` is that
+    turn.
     """
+
+    spin = Revolute(axis=(0, 0, 1), unit='deg')
 
     gear = DriveGear()
     nut = SetScrewNut()
@@ -70,14 +73,7 @@ class Pinion(AssemblyNode):
 
 
 class MotorSegment(AssemblyNode):
-    """The segment, its stepper, the pinion and the limit switch.
-
-    `travel` is how far the sled riding this segment has gone forward
-    along the segment's own -y -- the way both sleds go when their
-    driver is positive -- and it is what the pinion is turned by.
-    """
-
-    travel = TranslationalPort(unit='mm')
+    """The segment, its stepper, the pinion and the limit switch."""
 
     segment = MotorRailSegment()
     motor = Nema17()
@@ -89,6 +85,3 @@ class MotorSegment(AssemblyNode):
         place(self.pinion, up(motor_top_z + GEAR_SEAT), zrot(-90))
         place(self.switch, fwd(SWITCH_Y), up(SWITCH_Z), left(SWITCH_X),
               xrot(90))
-
-    def simulate(self):
-        self.pinion.rotate(pinion.angle(self.travel.value), Z)
