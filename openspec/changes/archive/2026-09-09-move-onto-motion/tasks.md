@@ -155,3 +155,9 @@ Never edit a test: if one blocks, stop and report the assertion and why.
       counts before and after, every deviation from this proposal, and every
       test you believe needs a change with the reason. Do not sync or
       archive this change; the orchestrator does that after review.
+
+## Review (orchestrator, 2026-09-09)
+
+Diff matches the reviewed proposal; poses identical over 17 poses and
+170 leaves (the predicted reassociation stays below the capture's
+rounding); 28/28 green before and after. Archived.
