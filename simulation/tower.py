@@ -8,7 +8,8 @@ is how the design draws it, so the rails stand at ``x = -44`` and the
 lifter under them.
 """
 
-from solid_node.node import AssemblyNode, RotationalPort
+from solid_node.node import AssemblyNode
+from solid_node.motion.ports import RotationalPort
 from solid_node.parameters import Flag
 
 from simulation import colors

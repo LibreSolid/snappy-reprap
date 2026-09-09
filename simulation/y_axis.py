@@ -6,7 +6,8 @@ sled sliding along the top.  It stands on the X sled's deck, so it
 goes wherever X goes; what moves here is the bed.
 """
 
-from solid_node.node import AssemblyNode, TranslationalPort
+from solid_node.node import AssemblyNode
+from solid_node.motion.ports import TranslationalPort
 
 from simulation.motor_segment import SWITCH_Y, MotorSegment
 from simulation.params import (

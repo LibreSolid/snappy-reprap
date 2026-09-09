@@ -6,7 +6,8 @@ the whole stack turned by the sled's height.  Here the stack is turned
 by the angle the machine hands down.
 """
 
-from solid_node.node import AssemblyNode, RotationalPort
+from solid_node.node import AssemblyNode
+from solid_node.motion.ports import RotationalPort
 
 from simulation import colors
 from simulation.params import (

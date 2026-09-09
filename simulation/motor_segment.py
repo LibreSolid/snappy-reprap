@@ -7,7 +7,8 @@ drive gear on its shaft, and the microswitch clipped beside the rack's
 path.  The wiring differs between the two and belongs to the axes.
 """
 
-from solid_node.node import AssemblyNode, TranslationalPort
+from solid_node.node import AssemblyNode
+from solid_node.motion.ports import TranslationalPort
 
 from simulation import colors, pinion
 from simulation.params import (

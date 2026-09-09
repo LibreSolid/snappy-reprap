@@ -7,7 +7,8 @@ follow the sled.  The two Z towers snap onto the ends of this rail and
 belong to the machine, not to the axis.
 """
 
-from solid_node.node import AssemblyNode, TranslationalPort
+from solid_node.node import AssemblyNode
+from solid_node.motion.ports import TranslationalPort
 
 from simulation.cable_chain import CableChain
 from simulation.chain_parts import ChainJoinerMount

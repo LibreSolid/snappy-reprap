@@ -46,7 +46,8 @@ import math
 
 from molejo import Arc, Circle, Line, P, Shape
 from solid_node.math import cos, max, min, sin
-from solid_node.node import AssemblyNode, MolejoNode, TranslationalPort
+from solid_node.node import AssemblyNode, MolejoNode
+from solid_node.motion.ports import TranslationalPort
 from solid_node.parameters import Count, Length
 
 from simulation import colors

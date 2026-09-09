@@ -39,7 +39,8 @@ drop from above the brace to it is what gets longer and shorter.
 """
 
 from molejo import Circle, Helix, Line, P, Shape, Spline
-from solid_node.node import MolejoNode, TranslationalPort
+from solid_node.node import MolejoNode
+from solid_node.motion.ports import TranslationalPort
 
 from simulation import colors
 from simulation.params import (
