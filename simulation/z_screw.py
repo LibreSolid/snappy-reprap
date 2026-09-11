@@ -37,7 +37,7 @@ rate takes: this is a screw, not a rack, and the interface should show
 a maker the difference.
 """
 
-from solid_node.mechanisms import screw_angle, screw_travel
+from solid_node_mechanics import screw_angle, screw_travel
 
 from simulation.params import lifter_rod_pitch
 
